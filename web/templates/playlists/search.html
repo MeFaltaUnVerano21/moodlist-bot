@@ -1,0 +1,89 @@
+{% extends 'templates/main.html' %}
+
+{% block content %}
+    <div style="position: relative; left: 0; top: 50%; text-align: center; width: 50%; text-align: center" class="container-fluid">
+        {% if message %}
+            <div class="row" style="text-align: center;">
+                <div class="col">
+                    <h2>Something went wrong</h2>
+                </div>
+            </div>
+
+            <div class="row" style="text-align: center;">
+                <div class="col dark-hover">
+                    <p class="white"style="position: relative; top: 50%; transform: translate(0, -50%);"">{{ message }}</p>
+                </div>
+            </div>
+        {% else %}
+            {% if term %}
+                <div class="row" style="text-align: center;">
+                    <div class="col">
+                        <h2>Found <strong>{{ len(playlists) }}</strong> results for the term "{{ term }}"</h2>
+                    </div>
+                </div>
+            {% else %}
+                <div class="row" style="text-align: center;">
+                    <div class="col">
+                        <h2>Playlist Search</h2>
+                    </div>
+                </div>
+            {% endif %}
+        <br>
+        
+            {% if term %}
+                {% for playlist in playlists %}
+                    <div class="row dark-hover" style="text-align: center; padding: 10px;">
+                            <div class="col-sm-8" style="text-align: left;">
+                                <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);"><strong>{{ playlist['name'].title() }}</strong> by {{ playlist['author'] }} | <strong>{{ len(playlist['songs']) }}</strong> songs | Mood: <strong>{{ playlist['mood'] }}</strong></p>
+                            </div>
+                        <div class="col-sm-2">
+                            <a href="/playlists/{{ playlist['id'] }}/{{ playlist['key'] }}" target="_blank" class="btn btn-primary" style="position: relative; top: 50%; transform: translate(0, -50%);">See more</a>
+                        </div>
+                        <div class="col-sm-2">
+                            <a href="/p/{{ playlist['key'] }}" target="_blank" class="btn btn-info" style="position: relative; top: 50%; transform: translate(0, -50%);">Share Playlist</a>
+                        </div>
+                    </div>
+                    <br>
+                {% endfor %}
+            {% else %}
+                <div class="row justify-content-center" style="padding: 10px; background-color: #23272a; border-radius: 5px;">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <form action="/playlists/search">
+                            <div class="col">
+                                <input class="form-control" type="text" placeholder="Query" aria-label="Search" name="query" style="background: transparent !important; border-color: white !important; color: white !important;">
+                            </div>
+                            <br>
+                            <label for="sel1">Select Search Type:</label>
+                            <select name="type" id="sel1" class="browser-default custom-select" style="background-color: transparent !important; color: white !important;">
+                                <option>Select Search Type</option>
+                                <option value="user">Search by Username</option>
+                                <option value="playlist">Search by Playlist Name</option>
+                                <option value="song">Search for a Song</option>
+                                <option value="artist">Search for an Artist</option>
+                            </select>
+                        </form>
+                    </div>
+                </div>
+                <br>
+                <br>
+                <div class="row" style="text-align: center;">
+                    <div class="col">
+                        <h4>Here's a random playlist:</h4>
+                    </div>
+                </div>
+                <br>
+                <div class="row dark-hover" style="text-align: center; padding: 10px;">
+                    <div class="col-sm-8" style="text-align: left;">
+                        <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);"><strong>{{ playlist['name'].title() }}</strong> by {{ playlist['author'] }} | <strong>{{ len(playlist['songs']) }}</strong> songs | Mood: <strong>{{ playlist['mood'] }}</strong></p>
+                    </div>
+                    <div class="col-sm-2">
+                        <a href="/playlists/{{ playlist['id'] }}/{{ playlist['key'] }}" target="_blank" class="btn btn-primary" style="position: relative; top: 50%; transform: translate(0, -50%);">See more</a>
+                    </div>
+                    <div class="col-sm-2">
+                        <a href="/p/{{ playlist['key'] }}" target="_blank" class="btn btn-info" style="position: relative; top: 50%; transform: translate(0, -50%);">Share Playlist</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endblock content %}

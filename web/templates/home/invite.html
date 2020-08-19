@@ -1,0 +1,33 @@
+{% extends 'templates/main.html' %}
+
+{% block content %}
+    <div style="position: relative; left: 0; top: 50%; text-align: center; width: 50%; text-align: center" class="container-fluid">
+        <div class="row" style="text-align: center;">
+            <h2 style="width: 100%">Select A Server</h2>
+        </div>
+        {% for guild in guilds %}
+            <div class="row dark-hover" style="text-align: center; padding: 10px;">
+                    <div class="col-sm-2" style="float: left;">
+                        {% if str(guild.icon_url) == "None" %}
+                            <img src="https://discordapp.com/assets/322c936a8c8be1b803cd94861bdfa868.png" style="border-radius: 25%;" width="50">
+                        {% else %}
+                            <img src="{{ guild.icon_url }}" style="border-radius: 25%;" width="50">
+                        {% endif %}
+                    </div>
+                    <div class="col-sm-7" style="text-align: left;">
+                        <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);">{{ guild.name }}</p>
+                    </div>
+                <div class="col-sm-3">
+                    <a href="/invite/add/{{ guild.id }}" target="_blank" class="btn btn-primary" style="position: relative; top: 50%; transform: translate(0, -50%);">Add to server</a>
+                </div>
+            </div>
+            <br>
+        {% endfor %}
+
+        <div class="row dark-hover" style="text-align: center; padding: 10px;">
+            <div class="col">
+                <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);">Want more features? Consider getting premium <a href="https://pratreon.com/logan_webb" target="_blank" class="btn btn-primary" style="margin-left: 5px">here</a></p>
+            </div>
+        </div>
+    </div>
+{% endblock content %}

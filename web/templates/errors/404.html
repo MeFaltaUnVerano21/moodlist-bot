@@ -1,0 +1,10 @@
+{% extends 'templates/main.html' %}
+
+{% block content %}
+    <div style="padding: 50px; border-radius: 10px; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); text-align: center; background-color: #23272a;">
+        <img src="https://cdn.discordapp.com/attachments/737672423310229524/743108431719956591/sad.png" alt="Sad face">
+        <h1>{{ message }}</h1>
+        <br>
+        <button onclick="window.location.href = '/'" class="btn btn-info">{{ text }}</button>
+    </div>
+{% endblock content %}

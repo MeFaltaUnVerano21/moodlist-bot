@@ -1,0 +1,42 @@
+{% extends 'templates/main.html' %}
+
+{% block content %}
+    <div style="position: relative; left: 0; top: 50%; text-align: center; width: 50%; text-align: center" class="container-fluid">
+        <div class="row" style="text-align: center;">
+            <div class="col">
+                <h4><strong>{{ playlist['name'].title() }}</strong> by <strong>{{ playlist['author'] }}</strong> | {{ len(playlist['songs']) }} songs</h4>
+            </div>
+            <div class="col">
+                {% if playlist['public'] %}
+                    <h5><strong>[prefix]playlist load http://localhost:5000/p/{{ playlist['key'] }}</strong></h5>
+                {% else %}
+                    <form action="/playlists/{{ user.id }}/{{ playlist['key'] }}/public?redirect=/playlists/{{ user.id }}/{{ playlist['key'] }}" style="padding: 0; margin: 0;" method="POST">
+                        <button type="submit" class="btn btn-info">Make Public</a>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <br>
+
+        {% for song in playlist['songs'] %}
+            <div class="row dark-hover" style="text-align: center; padding: 10px;">
+                <div class="col-8" style="text-align: left;">
+                    <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);">{{ song[0] }}</p>
+                </div>
+                {% if playlist['id'] == user.id %}
+                    <div class="col-2">
+                        <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);">Mood: {{ song[1] }}</p>
+                    </div>
+                    <div class="col-2">
+                        <a href="/playlists/{{ user.id }}/{{ playlist['key'] }}/remove/{{ song[0] }}" class="btn btn-danger">Remove</a>
+                    </div>
+                {% else %}
+                    <div class="col-4">
+                        <p style="position: relative; color: white; top: 50%; transform: translate(0, -50%);">Mood: {{ song[1] }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            <br>
+        {% endfor %}
+    </div>
+{% endblock content %}
