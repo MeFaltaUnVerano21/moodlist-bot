@@ -11,7 +11,7 @@ from textblob import TextBlob
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.WEB_URL = "http://167.172.50.54:5000"
+        self.WEB_URL = "http://localhost:5000"
 
         super().__init__(command_prefix="m!", case_insensitive=True)
 
