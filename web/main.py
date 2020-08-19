@@ -149,8 +149,8 @@ with open("cache.json", "r") as f:
 
 @app.before_first_request
 async def before():
-    app.db = await asyncpg.create_pool(database="moodlist", user=os.environ.get("PG_NAME"), password=os.environ.get("PG_PASSWORD"))
+    app.db = await asyncpg.create_pool(database="moodlist", user="logan", password="Theboys3")
     app.cs = aiohttp.ClientSession()
 
 if __name__ == "__main__":
-    app.run(debug=False, use_reloader=False)
+    app.run(debug=True, use_reloader=False)
