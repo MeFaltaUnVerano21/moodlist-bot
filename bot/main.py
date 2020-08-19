@@ -49,7 +49,7 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print("Ready")
 
-        self.db = await asyncpg.create_pool(database="moodlist", user="postgres", password="Theboys3")
+        self.db = await asyncpg.create_pool(database="moodlist", user=os.environ.get("PG_NAME"), password=os.environ.get("PG_PASSWORD"))
         self.cs = aiohttp.ClientSession()
 
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="unique playlists | Moodlist"))
