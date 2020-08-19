@@ -11,7 +11,7 @@ from textblob import TextBlob
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.WEB_URL = "http://localhost:5000"
+        self.WEB_URL = "http://167.172.50.54:5000"
 
         super().__init__(command_prefix="m!", case_insensitive=True)
 
@@ -49,7 +49,7 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print("Ready")
 
-        self.db = await asyncpg.create_pool(database="moodlist", user="logan", password="Theboys3")
+        self.db = await asyncpg.create_pool(database="moodlist", user="postgres", password="Theboys3")
         self.cs = aiohttp.ClientSession()
 
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="unique playlists | Moodlist"))
