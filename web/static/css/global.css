@@ -1,6 +1,8 @@
 body {
     color: white;
     font-family: 'Poppins', sans-serif;
+
+    overflow-x: hidden !important;
 }
 
 .discord-btn {
@@ -49,58 +51,6 @@ body {
     width: 90% !important;
 }
 
-/* Shrinking the sidebar from 250px to 80px and center aligining its content*/
-#sidebar.active {
-    min-width: 80px;
-    max-width: 80px;
-    text-align: center;
-}
-
-/* Toggling the sidebar header content, hide the big heading [h3] and showing the small heading [strong] and vice versa*/
-#sidebar .sidebar-header strong {
-    display: none;
-}
-#sidebar.active .sidebar-header h3 {
-    display: none;
-}
-#sidebar.active .sidebar-header strong {
-    display: block;
-}
-
-#sidebar ul li a {
-    text-align: left;
-}
-
-#sidebar.active ul li a {
-    padding: 20px 10px;
-    text-align: center;
-    font-size: 0.85em;
-}
-
-#sidebar.active ul li a i {
-    margin-right:  0;
-    display: block;
-    font-size: 1.8em;
-    margin-bottom: 5px;
-}
-
-/* Same dropdown links padding*/
-#sidebar.active ul ul a {
-    padding: 10px !important;
-}
-
-/* Changing the arrow position to bottom center position, 
-   translateX(50%) works with right: 50% 
-   to accurately  center the arrow */
-#sidebar.active .dropdown-toggle::after {
-    top: auto;
-    bottom: 10px;
-    right: 50%;
-    -webkit-transform: translateX(50%);
-    -ms-transform: translateX(50%);
-    transform: translateX(50%);
-}
-
 .home-banner {
     background-image: url("https://mpaonline.org.uk/wp-content/uploads/2016/09/Grey-banner-musical-notes.jpg");
     background-repeat: no-repeat;
@@ -126,6 +76,8 @@ body {
     position: relative;
 
     transform: translateY(60px);
+
+    z-index: -1 !important;
 }
 
 .tell-us-mood {
@@ -140,78 +92,67 @@ body {
     background-color: #23272a !important;
 }
 
-.add-on .input-group-btn > .btn {
-    border-left-width:0;left:-2px;
-    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
-  }
-  /* stop the glowing blue shadow */
-  .add-on .form-control:focus {
-   box-shadow:none;
-   -webkit-box-shadow:none; 
-   border-color:#cccccc; 
-  }
+.card-icon {
+    z-index: 100 !important;
+}
 
+.card {
+    z-index: 0 !important;
+}
+
+#page-container {
+    position: relative;
+    min-height: 100vh;
+}
+  
+#content-wrap {
+    padding-bottom: 2.5rem;    /* Footer height */
+}
+  
+#footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 2.5rem;            /* Footer height */
+}
+
+footer{
+    font-family: 'Poppins', sans-serif;
+	background:#23272a;
+	height:200px;
+    line-height: 200px;
+    color: #FFF; 
+}
+
+.f-container {
+    background: #23272a;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden;
+}
+
+footer .footer-menu li{
+	display: inline-block;
+}	
+
+footer .footer-menu li a{
+	color: #FFF;
+	margin: 0px 10px;
+	text-decoration: none;
+}
+
+footer .fa{
+    color:#FFF;
+    font-size:30px;
+}
 
 @media (max-width: 768px) {
-    /* 80px and its content aligned to centre. Pushing it off the screen with the
-       negative left margin
-    */
-    #sidebar.active {
-        min-width: 80px;
-        max-width: 80px;
-        text-align: center;
-        margin-left: -80px !important;
-    }
-
-
-    /* Reappearing the sidebar on toggle button click */
-    #sidebar {
-        margin-left: 0; 
-    }
-
-
-    /* Toggling the sidebar header content, 
-       hide the big heading [h3] and showing the small heading [strong] and vice versa
-    */
-    #sidebar .sidebar-header strong {
+    .banner-wave {
         display: none;
     }
-    #sidebar.active .sidebar-header h3 {
-        display: none;
-    }
-    #sidebar.active .sidebar-header strong {
-        display: block;
-    }
 
-    /* Downsize the navigation links font size */
-    #sidebar.active ul li a {
-        padding: 20px 10px;
-        font-size: 0.85em;
-    }
-
-    #sidebar.active ul li a i {
-        margin-right:  0;
-        display: block;
-        font-size: 1.8em;
-        margin-bottom: 5px;
-    }
-
-    /* Adjust the dropdown links padding*/
-    #sidebar.active ul ul a {
-        padding: 10px !important;
-    }
-
-    /* Changing the arrow position to bottom center position, 
-      translateX(50%) works with right: 50% 
-      to accurately  center the arrow */
-    .dropdown-toggle::after {
-        top: auto;
-        bottom: 10px;
-        right: 50%;
-        -webkit-transform: translateX(50%);
-        -ms-transform: translateX(50%);
-        transform: translateX(50%);
+    .tell-us-mood {
+        width: 90%;
     }
 }
 

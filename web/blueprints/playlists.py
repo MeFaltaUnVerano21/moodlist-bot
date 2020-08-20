@@ -7,12 +7,23 @@ from qclass import ClassyBlueprint
 from flask_discord import requires_authorization
 
 class Playlists(ClassyBlueprint):
+    async def get_quota(self, user_id, *, route="NO_ROUTE"):
+        quota = await self.app.db.fetch("SELECT * FROM quota WHERE id=$1", user_id)
+
+        if not quota:
+            quota = 10
+        else:
+            quota = quota[0]["quota"]
+        
+        return quota
+
     @requires_authorization
     async def playlists(self, *, route="/"):
         user = self.app.discord.fetch_user()
         pl_list = await self.app.db.fetch("SELECT * FROM playlists WHERE id=$1", user.id)
+        quota = await self.get_quota(user.id)
 
-        return await render_template("playlists/my_playlists.html", playlists=pl_list, len=len, user=user, same=True)
+        return await render_template("playlists/my_playlists.html", playlists=pl_list, len=len, user=user, same=True, quota=quota)
     
     @requires_authorization
     async def make_public(self, user_id, key, *, route="/<int:user_id>/<int:key>/public"):
@@ -29,8 +40,12 @@ class Playlists(ClassyBlueprint):
         user = self.app.discord.fetch_user()
         playlist = await self.app.db.fetch("SELECT * FROM playlists WHERE id=$1 AND key=$2", user_id, key)
 
-        if not playlist or (playlist[0]["public"] == False and playlist[0]["id"] != user.id):
+        if not playlist:
             return abort(404)
+        
+        if not playlist[0]["public"]:
+            if user.id != playlist[0]["id"]:
+                return abort(404)
         
         return await render_template("playlists/playlist.html", user=user, playlist=playlist[0], len=len)
     
@@ -100,7 +115,12 @@ class Playlists(ClassyBlueprint):
 
         playlists = await self.app.db.fetch("SELECT * FROM playlists WHERE id=$1 AND public=true", user_id)
 
-        return await render_template("playlists/my_playlists.html", user=user, playlists=playlists, len=len, same=False)
+        if not playlists:
+            return abort(404)
+
+        quota = await self.get_quota(user_id)
+
+        return await render_template("playlists/my_playlists.html", user=user, playlists=playlists, len=len, same=False, quota=quota)
     
     async def remove_song(self, user_id, key, song, *, route="/<int:user_id>/<int:key>/remove/<song>"):
         user = self.app.discord.fetch_user()

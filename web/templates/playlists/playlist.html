@@ -1,11 +1,12 @@
 {% extends 'templates/main.html' %}
 
+{% block ba_content %}
+    <h1><strong>{{ playlist['name'].title() }}</strong> by <strong>{{ playlist['author'] }}</strong> | <strong>{{ len(playlist['songs']) }}</strong> songs</h1>
+{% endblock ba_content %}
+
 {% block content %}
     <div style="position: relative; left: 0; top: 50%; text-align: center; width: 50%; text-align: center" class="container-fluid">
         <div class="row" style="text-align: center;">
-            <div class="col">
-                <h4><strong>{{ playlist['name'].title() }}</strong> by <strong>{{ playlist['author'] }}</strong> | {{ len(playlist['songs']) }} songs</h4>
-            </div>
             <div class="col">
                 {% if playlist['public'] %}
                     <h5><strong>[prefix]playlist load http://localhost:5000/p/{{ playlist['key'] }}</strong></h5>

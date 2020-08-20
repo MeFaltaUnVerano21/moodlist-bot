@@ -1,5 +1,9 @@
 {% extends 'templates/main.html' %}
 
+{% block ba_content %}
+    <h1 class="white">Playlist Search</h1>
+{% endblock ba_content %}
+
 {% block content %}
     <div style="position: relative; left: 0; top: 50%; text-align: center; width: 50%; text-align: center" class="container-fluid">
         {% if message %}
@@ -19,12 +23,6 @@
                 <div class="row" style="text-align: center;">
                     <div class="col">
                         <h2>Found <strong>{{ len(playlists) }}</strong> results for the term "{{ term }}"</h2>
-                    </div>
-                </div>
-            {% else %}
-                <div class="row" style="text-align: center;">
-                    <div class="col">
-                        <h2>Playlist Search</h2>
                     </div>
                 </div>
             {% endif %}
@@ -48,7 +46,7 @@
             {% else %}
                 <div class="row justify-content-center" style="padding: 10px; background-color: #23272a; border-radius: 5px;">
                     <div class="col-12 col-md-10 col-lg-8">
-                        <form action="/playlists/search">
+                        <form action="/playlists/search" style="padding: 10px">
                             <div class="col">
                                 <input class="form-control" type="text" placeholder="Query" aria-label="Search" name="query" style="background: transparent !important; border-color: white !important; color: white !important;">
                             </div>
@@ -61,6 +59,8 @@
                                 <option value="song">Search for a Song</option>
                                 <option value="artist">Search for an Artist</option>
                             </select>
+                            <br><br>
+                            <button class="btn btn-primary" type="submit">Search</button>
                         </form>
                     </div>
                 </div>
