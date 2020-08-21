@@ -5,7 +5,6 @@ from flask_discord import requires_authorization
 
 class Home(ClassyBlueprint):
     async def index(self):
-        print(await self.app.track_event(self.app, "Example", "Test Action"))
         if self.app.discord.authorized:
             user = self.app.discord.fetch_user()
         else:

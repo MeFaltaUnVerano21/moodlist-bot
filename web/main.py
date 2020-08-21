@@ -1,6 +1,9 @@
 import quart.flask_patch
 
-from quart import Quart, jsonify, request
+from quart import Quart, jsonify, request, session
+
+import jwt
+import flask_discord as discord
 from flask_discord import DiscordOAuth2Session, requires_authorization, Unauthorized
 
 from threading import Timer
@@ -56,24 +59,7 @@ def refresh():
 
     return _sp
 
-async def track_event(app, category, action, label=None, value=0):
-    data = {
-        "v": "1",
-        "tid": GA_TRACKING_ID,
-        "cid": "555",
-        "t": "event",
-        "ec": category,
-        "ea": action,
-        "el": label,
-        "ev": value,
-        "ua": "Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Verion/12.14"
-    }
-    response = await app.cs.post("https://www.google-analytics.com/collect", json=data)
-
-    return await response.text()
-
 app = Quart(__name__)
-app.track_event = track_event
 
 app.sp = sp
 sp.app = app
@@ -87,7 +73,38 @@ app.config["DISCORD_CLIENT_ID"] = "739489265263837194"
 app.config["DISCORD_CLIENT_SECRET"] = "lL6oIxaMyg4M7ws6nicodQkAb1R-hxHr"
 app.config["DISCORD_REDIRECT_URI"] = os.environ.get("MOODLIST_REDIRECT")
 
-app.discord = DiscordOAuth2Session(app)
+class DiscordSubclass(DiscordOAuth2Session):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+    
+    @staticmethod
+    def __save_state(state):
+        session["DISCORD_OAUTH2_STATE"] = state
+
+    @staticmethod
+    def __get_state():
+        return session.pop("DISCORD_OAUTH2_STATE", str())
+
+    async def callback(self):
+        """A method which should be always called after completing authorization code grant process
+        usually in callback view.
+        It fetches the authorization token and saves it flask
+        `session <http://flask.pocoo.org/docs/1.0/api/#flask.session>`_ object.
+        """
+        values = await request.values
+        error = values.get("error")
+        if error:
+            if error == "access_denied":
+                raise discord.exceptions.AccessDenied()
+            raise discord.exceptions.HttpException(error)
+
+        state = self.__get_state()
+        token = super()._fetch_token(state)
+        self.save_authorization_token(token)
+
+        return jwt.decode(state, app.config["SECRET_KEY"])
+
+app.discord = DiscordSubclass(app)
 
 MOOD_VALUES =  {
     "happy": 1,
