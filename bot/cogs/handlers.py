@@ -19,7 +19,7 @@ class Handlers(commands.Cog):
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
         
         embed = discord.Embed(title="Oops! Something went wrong!", description=f"**{error}**\n\nJoin the moodlist support server [here](https://discord.gg/kayUTZm) for further support.", colour=self.bot.colour)
-        embed.set_image(url=self.bot.images["sad"])
+        embed.set_thumbnail(url=self.bot.images["sad"])
 
         return await ctx.send(embed=embed)
 
