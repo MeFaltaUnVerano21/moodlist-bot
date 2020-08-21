@@ -87,7 +87,7 @@ class Playlists(commands.Cog):
             if tracks:
                 await controller.queue.put(tracks[0])
         
-        new_embed.description = f"Successfully generated a playlist of {len(data['data'])} songs.\n\nWant to generate larger playlists? Consider becoming a patreon [here](https://patreon.com/logan_webb) to increase your playlist sizes, as well as save playlists!"
+        new_embed.description = f"Successfully generated a playlist of {len(data['data'])} songs.\n\nWant to generate larger playlists? Consider becoming a patreon [here](https://patreon.com/logan_webb) to increase your playlist sizes, as well as save playlists!\n\nWant to save this playlist? Run `{ctx.prefix}playlist save PLAYLIST NAME`!"
         await message.edit(embed=new_embed)
 
         count = await self.bot.db.fetch("SELECT * FROM total")
