@@ -8,7 +8,7 @@ class Auth(ClassyBlueprint):
 
     async def logout(self):
         user = self.app.discord.fetch_user()
-        await self.app.cs.post("https://discordapp.com/api/webhooks/746351770170556457/OSdolCDIAF8khHzGxcv23z42f67U2uxngTs0ynf8fw6EzPk9O61lLYLJl-hO4_p9AcBT", json={"content": f"{user} has logged in"})
+        await self.app.cs.post("https://discordapp.com/api/webhooks/746351770170556457/OSdolCDIAF8khHzGxcv23z42f67U2uxngTs0ynf8fw6EzPk9O61lLYLJl-hO4_p9AcBT", json={"content": f"{user} has logged out"})
 
         self.app.discord.revoke()
         return redirect(url_for("index"))
