@@ -72,9 +72,11 @@ class Bot(commands.Bot):
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="unique playlists | Moodlist"))
     
     async def on_guild_join(self, guild):
+        await self.cs.post("https://discordapp.com/api/webhooks/746390721061191691/GhpWUcP5qwQyPYMIFZ8OlSLiSVgztorfwEdCPE0zIMoweOSYtHbFRZWSA2yuiRkFoqA_", json={"content": f"Joined {guild.name} - {guild.member_count} members. I am now in {len(self.guilds)} guilds"})
         await self.db.execute("INSERT INTO guilds (id) VALUES ($1)", guild.id)
     
     async def on_guild_remove(self, guild):
+        await self.cs.post("https://discordapp.com/api/webhooks/746390721061191691/GhpWUcP5qwQyPYMIFZ8OlSLiSVgztorfwEdCPE0zIMoweOSYtHbFRZWSA2yuiRkFoqA_", json={"content": f"Left {guild.name} - {guild.member_count} members. I am now in {len(self.guilds)} guilds"})
         await self.db.execute("DELETE FROM guilds WHERE id=$1", guild.id)
     
     # CUSTOM STUFF
