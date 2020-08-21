@@ -152,7 +152,17 @@ footer .fa{
     }
 
     .tell-us-mood {
-        width: 90%;
+        width: 90% !important;
+    }
+}
+
+@media (max-width: 1000px) {
+    .banner-wave {
+        display: none;
+    }
+
+    .tell-us-mood {
+        width: 90% !important;
     }
 }
 
