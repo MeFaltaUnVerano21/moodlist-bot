@@ -85,7 +85,7 @@ app.config["guilds"] = 0
 app.config["SECRET_KEY"] = b"jklskfjnakdj"
 app.config["DISCORD_CLIENT_ID"] = "739489265263837194"
 app.config["DISCORD_CLIENT_SECRET"] = "lL6oIxaMyg4M7ws6nicodQkAb1R-hxHr"
-app.config["DISCORD_REDIRECT_URI"] = "http://localhost:5000/login/callback"
+app.config["DISCORD_REDIRECT_URI"] = os.environ.get("MOODLIST_REDIRECT")
 
 app.discord = DiscordOAuth2Session(app)
 

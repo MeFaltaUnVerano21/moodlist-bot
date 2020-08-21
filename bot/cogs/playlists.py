@@ -131,17 +131,23 @@ class Playlists(commands.Cog):
         return await menu.start(ctx)
 
     @playlist_.command(name="save")
-    @commands.is_owner()
     async def save_(self, ctx, *, playlist_name):
         """Save a playlist"""
-        await self.bot.db.execute("INSERT INTO playlists (id, name, songs, mood, author, username) VALUES ($1,$2,$3,$4,$5,$6)", ctx.author.id, playlist_name.lower(), self.playlist_cache[ctx.author.id][1], self.playlist_cache[ctx.author.id][0], str(ctx.author), ctx.author.name.lower())
+        quota = await self.bot.update_quota(ctx)
+
+        count = await self.bot.db.fetch("SELECT COUNT(*) FROM playlists WHERE id=$1", ctx.author.id)
+
+        if count:
+            if count[0]["count"] >= quota:
+                return await ctx.send(f"You have reached your save quota! You have saved **{quota}**/**{quota}**")
+
+        await self.bot.db.execute("INSERT INTO playlists (id, name, songs, mood, author, username, avatar_url) VALUES ($1,$2,$3,$4,$5,$6,$7)", ctx.author.id, playlist_name.lower(), self.playlist_cache[ctx.author.id][1], self.playlist_cache[ctx.author.id][0], str(ctx.author), ctx.author.name.lower(), str(ctx.author.avatar_url_as(format="png")))
 
         embed = discord.Embed(colour=self.bot.colour, description=f"Your playlist has been saved under the name **{playlist_name.lower()}**! Use `mood playlist load {playlist_name.lower()}` to load it in the future.")
 
         return await ctx.send(embed=embed)
     
     @playlist_.command(name="load")
-    @commands.is_owner()
     async def load_(self, ctx, *, playlist_name):
         """Load a playlist"""
         if playlist_name.startswith("http://localhost:5000/p"):

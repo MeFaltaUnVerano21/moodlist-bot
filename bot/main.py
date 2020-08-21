@@ -124,6 +124,14 @@ class Bot(commands.Bot):
 
         return result
     
+    async def update_quota(self, ctx):
+        quota = await self.get_length(ctx)
+
+        await self.db.execute("DELETE FROM quota WHERE id=$1", ctx.author.id)
+        await self.db.execute("INSERT INTO quota (id, quota) VALUES ($1,$2)", ctx.author.id, quota)
+
+        return quota
+
     def chunks(self, data, amount):
         for i in range(0, len(data), amount):
             yield data[i:i + amount]
