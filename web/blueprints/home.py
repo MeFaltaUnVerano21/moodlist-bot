@@ -26,7 +26,7 @@ class Home(ClassyBlueprint):
         return await render_template("home/invite.html", guilds=guilds, my_guilds=my_guilds, str=str, user=user)
     
     async def invite_other(self, guild_id, *, route="/invite/add/<int:guild_id>"):
-        url = f"https://discord.com/api/oauth2/authorize?client_id=739489265263837194&permissions=37046592&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fdashboard&scope=bot&guild_id={guild_id}"
+        url = f"https://discord.com/api/oauth2/authorize?client_id=739489265263837194&permissions=37046592&scope=bot&guild_id={guild_id}"
         return redirect(url)
     
     async def get_playlist(self, key, *, route="/p/<int:key>"):
