@@ -43,7 +43,10 @@ class Home(ClassyBlueprint):
                 else:
                     return jsonify({"error": "Playlist not found"}), 404
 
-        user = self.app.discord.fetch_user()
+        if self.app.discord.authorized:
+            user = self.app.discord.fetch_user()
+        else:
+            user = None
 
         if not playlist or (playlist[0]["public"] == False and playlist[0]["id"] != user.id) and not request.headers.get("x-data-type"):
             return abort(404)

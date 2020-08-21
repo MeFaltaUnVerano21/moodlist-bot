@@ -37,7 +37,11 @@ class Playlists(ClassyBlueprint):
                     return redirect(request.args.get("redirect"))
     
     async def peek_playlist(self, user_id, key, *, route="/<int:user_id>/<int:key>"):
-        user = self.app.discord.fetch_user()
+        if self.app.discord.authorized:
+            user = self.app.discord.fetch_user()
+        else:
+            user = None
+
         playlist = await self.app.db.fetch("SELECT * FROM playlists WHERE id=$1 AND key=$2", user_id, key)
 
         if not playlist:
@@ -50,7 +54,10 @@ class Playlists(ClassyBlueprint):
         return await render_template("playlists/playlist.html", user=user, playlist=playlist[0], len=len, url=self.app.config["URL"])
     
     async def search_playlists(self, *, route="/search"):
-        user = self.app.discord.fetch_user()
+        if self.app.discord.authorized:
+            user = self.app.discord.fetch_user()
+        else:
+            user = None
 
         if request.args.get("query"):
             query = request.args.get("query")
@@ -108,9 +115,12 @@ class Playlists(ClassyBlueprint):
         return await render_template("playlists/search.html", user=user, term=None, len=len, playlist=random.choice(playlists))
 
     async def user_playlists(self, user_id, *, route="/<int:user_id>"):
-        user = self.app.discord.fetch_user()
+        if self.app.discord.authorized:
+            user = self.app.discord.fetch_user()
+        else:
+            user = None
 
-        if user.id == user_id:
+        if user and user.id == user_id:
             return redirect("/playlists")
 
         playlists = await self.app.db.fetch("SELECT * FROM playlists WHERE id=$1 AND public=true", user_id)
