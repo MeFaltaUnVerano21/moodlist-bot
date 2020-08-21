@@ -1,7 +1,7 @@
 {% extends 'templates/main.html' %}
 
 {% block ba_content %}
-    <h1><strong>{{ playlist['name'].title() }}</strong> by <strong>{{ playlist['author'] }}</strong> | <strong>{{ len(playlist['songs']) }}</strong> songs</h1>
+    <h1><strong>{{ playlist['name'].title() }}</strong> by <a href="/playlists/{{ playlist['id'] }}" class="btn btn-primary"><strong>{{ playlist['author'] }}</strong></a> | <strong>{{ len(playlist['songs']) }}</strong> songs</h1>
 {% endblock ba_content %}
 
 {% block content %}
@@ -9,7 +9,7 @@
         <div class="row" style="text-align: center;">
             <div class="col">
                 {% if playlist['public'] %}
-                    <h5><strong>[prefix]playlist load http://localhost:5000/p/{{ playlist['key'] }}</strong></h5>
+                    <h5><strong>[prefix]playlist load {{ url }}/p/{{ playlist['key'] }}</strong></h5>
                 {% else %}
                     <form action="/playlists/{{ user.id }}/{{ playlist['key'] }}/public?redirect=/playlists/{{ user.id }}/{{ playlist['key'] }}" style="padding: 0; margin: 0;" method="POST">
                         <button type="submit" class="btn btn-info">Make Public</a>

@@ -72,6 +72,7 @@ app.config["SECRET_KEY"] = b"jklskfjnakdj"
 app.config["DISCORD_CLIENT_ID"] = "739489265263837194"
 app.config["DISCORD_CLIENT_SECRET"] = "lL6oIxaMyg4M7ws6nicodQkAb1R-hxHr"
 app.config["DISCORD_REDIRECT_URI"] = os.environ.get("MOODLIST_REDIRECT")
+app.config["URL"] = os.environ.get("MOODLIST_URL")
 
 class DiscordSubclass(DiscordOAuth2Session):
     def __init__(self, *args, **kwargs):

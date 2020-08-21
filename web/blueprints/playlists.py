@@ -47,7 +47,7 @@ class Playlists(ClassyBlueprint):
             if user.id != playlist[0]["id"]:
                 return abort(404)
         
-        return await render_template("playlists/playlist.html", user=user, playlist=playlist[0], len=len)
+        return await render_template("playlists/playlist.html", user=user, playlist=playlist[0], len=len, url=self.app.config["URL"])
     
     async def search_playlists(self, *, route="/search"):
         user = self.app.discord.fetch_user()
