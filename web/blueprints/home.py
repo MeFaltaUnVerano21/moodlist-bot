@@ -33,6 +33,7 @@ class Home(ClassyBlueprint):
         headers = request.headers
         playlist = await self.app.db.fetch("SELECT * FROM playlists WHERE key=$1 AND public=true", key)
 
+        print(headers)
         if headers.get("x-data-type"):
             data_type = headers.get("x-data-type")
 
