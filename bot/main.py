@@ -11,9 +11,9 @@ from textblob import TextBlob
 
 class Bot(commands.Bot):
     def __init__(self):
-        self.WEB_URL = "http://localhost:5000"
+        self.WEB_URL = os.environ.get("MOODLIST_URL")
 
-        super().__init__(command_prefix="m!", case_insensitive=True)
+        super().__init__(command_prefix=self.get_prefix, case_insensitive=True)
 
         self.colour = discord.Colour(value=0x80d0c7)
 
@@ -26,13 +26,21 @@ class Bot(commands.Bot):
             "silver supporter": 20,
             "bonze supporter": 15
         }
-
         self.images = {
             "happy": "https://cdn.discordapp.com/attachments/737672423310229524/743108668270182430/moodlist.png",
             "neutral": "https://cdn.discordapp.com/attachments/737672423310229524/743108420101734450/neutral.png",
             "sad": "https://cdn.discordapp.com/attachments/737672423310229524/743108431719956591/sad.png"
         }
+
+        self.prefix_cache = {}
     
+    # PREFIX
+    async def get_prefix(self, message):
+        if self.prefix_cache.get(message.guild.id):
+            return commands.when_mentioned_or(self.prefix_cache[message.guild.id])(self, message)
+        
+        return commands.when_mentioned_or("m!")(self, message)
+
     # EVENTS
     async def on_connect(self):
         self.load_extension("jishaku")
@@ -49,19 +57,24 @@ class Bot(commands.Bot):
     async def on_ready(self):
         print("Ready")
 
-        self.db = await asyncpg.create_pool(database="moodlist", user=os.environ.get("PG_NAME"), password=os.environ.get("PG_PASSWORD"))
-        self.cs = aiohttp.ClientSession()
+        if not self.db:
+            self.db = await asyncpg.create_pool(database="moodlist", user=os.environ.get("PG_NAME"), password=os.environ.get("PG_PASSWORD"))
+        
+        if not self.cs:
+            self.cs = aiohttp.ClientSession()
 
+        if not self.prefix_cache:
+            prefixes = await self.db.fetch("SELECT * FROM prefixes")
+
+            for prefix in prefixes:
+                self.prefix_cache[prefix["id"]] = prefix["prefix"]
+            
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="unique playlists | Moodlist"))
-
-        await self.cs.post(f"{self.WEB_URL}/api/updateguilds", json={"guilds": len(self.guilds)})
     
     async def on_guild_join(self, guild):
-        await self.cs.post(f"{self.WEB_URL}/api/updateguilds", json={"guilds": len(self.guilds)})
         await self.db.execute("INSERT INTO guilds (id) VALUES ($1)", guild.id)
     
     async def on_guild_remove(self, guild):
-        await self.cs.post(f"{self.WEB_URL}/api/updateguilds", json={"guilds": len(self.guilds)})
         await self.db.execute("DELETE FROM guilds WHERE id=$1", guild.id)
     
     # CUSTOM STUFF
@@ -124,6 +137,9 @@ class Bot(commands.Bot):
 
         return result
     
+    async def get_quota(self, ctx):
+        return await self.get_length(ctx)
+
     async def update_quota(self, ctx):
         quota = await self.get_length(ctx)
 

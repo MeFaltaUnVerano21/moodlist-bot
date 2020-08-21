@@ -69,7 +69,6 @@ class Playlists(commands.Cog):
             except Exception:
                 return await ctx.send(await r.text())
         
-        print(data)
         if len(data["data"]) == 0:
             new_embed.description = "I couldn't find any songs matching your search! Try using a different mood or bpm."
             return await message.edit(embed=new_embed)
@@ -100,13 +99,17 @@ class Playlists(commands.Cog):
     
     @commands.group(name="playlist", aliases=["playlists", "pl"])
     async def playlist_(self, ctx):
-        """Playlist parent command, also shows your saved playlists if you are a patreon"""
+        """Playlist parent command"""
         if not self.music:
             self.music = self.bot.cogs.get("Music")
 
         if ctx.subcommand_passed:
             return
         
+    @playlist_.command(name="saves", aliases=["list"])
+    async def playlist_saves_(self, ctx):
+        """Get a list of your saved playlists"""
+        quota = await self.bot.get_quota(ctx)
         length = await self.bot.get_length(ctx)
 
         if length <= 10:
@@ -117,11 +120,22 @@ class Playlists(commands.Cog):
         if not data:
             return await ctx.send(embed=discord.Embed(title="Your playlists", description=f"You have no playlists! While the bot is playing, run `m!pl save <PLAYLIST NAME>` to save it!", colour=self.bot.colour))
     
-        chunks = self.bot.chunks([pl["name"] for pl in data], 5)
+        chunks = self.bot.chunks([pl for pl in data], 5)
         embeds = []
 
+        first_embed = discord.Embed(title="Your playlists", colour=self.bot.colour, description=f"""
+Your save quota: **{len(data)}**/**{quota}**
+To make your playlists public, login to our [Website](https://moodlist.xyz/login), and then click [this link!](https://moodlist.xyz/playlists/{ctx.author.id})
+        """)
+        first_embed.set_thumbnail(url=self.bot.user.avatar_url_as(format="png"))
+        embeds.append(first_embed)
+
         for i, lst in enumerate(chunks):
-            embed = discord.Embed(title="Your playlists", description=f"Use `m!playlist load <PLAYLIST NAME>` to load a playlist!{DOUBLE_BACK}{SINGLE_BACK.join([f'**{x}**' for x in lst])}", colour=self.bot.colour)
+            lists = []
+            for pl in lst:
+                lists.append(f"**{pl['name']}** - [View on moodlist.xyz](https://moodlist.xyz/playlists/{ctx.author.id}/{pl['key']})")
+
+            embed = discord.Embed(title="Your playlists", description=f"Use `m!playlist load PLAYLIST NAME` to load a playlist!{DOUBLE_BACK}{SINGLE_BACK.join(lists)}", colour=self.bot.colour)
             embed.set_thumbnail(url=self.bot.user.avatar_url_as(format="png"))
             embed.set_footer(text=f"Page {i+1}/{len(list(chunks))}", icon_url=ctx.author.avatar_url_as(format="png"))
 
@@ -139,18 +153,29 @@ class Playlists(commands.Cog):
 
         if count:
             if count[0]["count"] >= quota:
-                return await ctx.send(f"You have reached your save quota! You have saved **{quota}**/**{quota}**")
+                embed = discord.Embed(title="You have reached your save quota!", colour=self.bot.colour, description=f"""
+Your quota: **{quota}**/**{quota}**
 
-        await self.bot.db.execute("INSERT INTO playlists (id, name, songs, mood, author, username, avatar_url) VALUES ($1,$2,$3,$4,$5,$6,$7)", ctx.author.id, playlist_name.lower(), self.playlist_cache[ctx.author.id][1], self.playlist_cache[ctx.author.id][0], str(ctx.author), ctx.author.name.lower(), str(ctx.author.avatar_url_as(format="png")))
+To clear up some space, log into our [Website](https://moodlist.xyz/login), and then click [this link!](https://moodlist.xyz/playlists/{ctx.author.id})
 
-        embed = discord.Embed(colour=self.bot.colour, description=f"Your playlist has been saved under the name **{playlist_name.lower()}**! Use `mood playlist load {playlist_name.lower()}` to load it in the future.")
+**Alternatively, consider supporting the bot through our [patreon page](https://patreon.com/logan_webb) to upgrade your quota!**
+                """)
+                return await ctx.send(embed=embed)
+
+        data = await self.bot.db.fetch("INSERT INTO playlists (id, name, songs, mood, author, username, avatar_url) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *", ctx.author.id, playlist_name.lower(), self.playlist_cache[ctx.author.id][1], self.playlist_cache[ctx.author.id][0], str(ctx.author), ctx.author.name.lower(), str(ctx.author.avatar_url_as(format="png")))
+
+        embed = discord.Embed(colour=self.bot.colour, description=f"""
+Your playlist has been saved under the name **{playlist_name.lower()}**! Use `mood playlist load {playlist_name.lower()}` to load it in the future.
+
+To edit and configure your playlist, or share this playlist with your friends, log into our [website](https://moodlist.xyz/login) and then click [this link!](https://moodlist.xyz/playlists/{ctx.author.id}/{data[0]['key']})
+        """)
 
         return await ctx.send(embed=embed)
     
     @playlist_.command(name="load")
     async def load_(self, ctx, *, playlist_name):
         """Load a playlist"""
-        if playlist_name.startswith("http://localhost:5000/p"):
+        if playlist_name.startswith(("http://", "https://")):
             async with self.bot.cs.get(playlist_name.strip(), headers={"x-data-type": "json"}) as r:
                 data = [await r.json()]
 
@@ -185,26 +210,10 @@ class Playlists(commands.Cog):
         embed.description = "Loaded your playlist!"
 
         return await status.edit(embed=embed)
-    
-    @playlist_.command(name="bpm")
-    async def bpm_(self, ctx, tempo: int):
-        """Generate and play a playlist based on a BPM"""
-        if not ctx.author.voice:
-            return await ctx.send("Please join a voice channel before running this command.")
-        
-        player = self.bot.wavelink.get_player(ctx.guild.id)
-
-        if not player.is_connected:
-            await ctx.invoke(self.music.connect_)
-
-        if ctx.me.voice and ctx.me.voice.channel.id != ctx.author.voice.channel.id:
-            return await ctx.send("I am already playing in another channel!")
-
-        return await self.generate_playlist(ctx, tempo)
 
     @playlist_.command(name="mood")
     async def mood_(self, ctx, mood=None):
-        """Testing"""
+        """Generate a playlist based on your mood. The bot will analyze your messages within the channel to determine this."""
         try:
             mood = [float(mood)]
         except (ValueError, TypeError):
