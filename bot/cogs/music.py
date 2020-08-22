@@ -58,7 +58,6 @@ class MusicController:
 
             await self.next.wait()
 
-
 class Music(commands.Cog):
     """Music controller related commands, for playlist generating look at the playlists category"""
 
@@ -75,20 +74,32 @@ class Music(commands.Cog):
 
         self.bot.loop.create_task(self.start_nodes())
 
+    def get_node_info(self, region):
+        config = {
+            "host": "167.172.50.54",
+            "password": "lavalink@root@logan",
+            "identifier": "MAIN",
+            "region": region
+        }
+
+        if region == "us_central":
+            config["port"] = 20000
+        else:
+            config["port"] = 20001
+        config["rest_uri"] = f"{config['host']}:{config['port']}"
+
+        return config
+
     async def start_nodes(self):
         await self.bot.wait_until_ready()
 
         # Initiate our nodes. For this example we will use one server.
         # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
-        node = await self.bot.wavelink.initiate_node(host='167.172.50.54',
-                                                     port=20000,
-                                                     rest_uri='http://167.172.50.54:20000',
-                                                     password='lavalink@root@logan',
-                                                     identifier='MAIN',
-                                                     region='us_central')
+        us_node = await self.bot.wavelink.initiate_node(**self.get_node_info("us_central"))
+        eu_node = await self.bot.wavelink.initiate_node(**self.get_node_info("eu_central"))
 
-        # Set our node hook callback
-        node.set_hook(self.on_event_hook)
+        us_node.set_hook(self.on_event_hook)
+        eu_node.set_hook(self.on_event_hook)
     
     async def on_event_hook(self, event):
         """Node hook callback."""
