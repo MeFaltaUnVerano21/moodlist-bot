@@ -78,7 +78,7 @@ class Music(commands.Cog):
         config = {
             "host": "167.172.50.54",
             "password": "lavalink@root@logan",
-            "identifier": "MAIN",
+            "identifier": region.upper(),
             "region": region
         }
 
