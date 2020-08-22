@@ -86,7 +86,7 @@ class Music(commands.Cog):
             config["port"] = 20000
         else:
             config["port"] = 20001
-        config["rest_uri"] = f"{config['host']}:{config['port']}"
+        config["rest_uri"] = f"http://{config['host']}:{config['port']}"
 
         return config
 
