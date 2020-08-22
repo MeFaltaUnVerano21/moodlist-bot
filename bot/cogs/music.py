@@ -147,7 +147,7 @@ class Music(commands.Cog):
     async def play_(self, ctx, *, query: str):
         """Search for and add a song to the Queue."""
         if not RURL.match(query):
-            query = f'ytsearch:{query}'
+            query = f'ytsearch:{query} (audio)'
 
         tracks = await self.bot.wavelink.get_tracks(f'{query}')
 

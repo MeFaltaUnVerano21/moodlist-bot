@@ -28,17 +28,6 @@ class Api(ClassyBlueprint):
             return ({"error": "Unauthorized, incorrect token given.", "status": 403}, 403)
         
         return [{"message": "Authorized", "status": 200}, 200]
-        
-    async def updateguilds(self):
-        auth = await self.check_token(request.headers)
-
-        if auth[0].get("error"):
-            return jsonify(auth[0]), auth[1]
-
-        data = await request.json
-        self.app.config["guilds"] = data["guilds"]
-
-        return jsonify({"message": "Success", "status": 200}), 200
 
     async def popcache(self):
         auth = await self.check_token(request.headers)
@@ -48,8 +37,7 @@ class Api(ClassyBlueprint):
 
         tracks.populate_cache(self.app.sp)
 
-    async def api_generate_mood(self, value, amount, *, route="/generate/mood/<value>/<amount>"):
-        """Generate based on spotify mood"""
+    async def generate_mood(self, value, amount, *, route="/generate/mood/<value>/<amount>"):
         auth = await self.check_token(request.headers)
 
         if auth[0].get("error"):
@@ -70,5 +58,40 @@ class Api(ClassyBlueprint):
             selected_tracks_uri = tracks.select_tracks(sp, mood, int(amount), "mood")
 
         return jsonify({"data": selected_tracks_uri})
+    
+    async def generate_based_on_song(self, amount, *, route="/generate/song/<int:amount>"):
+        auth = await self.check_token(request.headers)
+
+        if auth[0].get("error"):
+            return jsonify(auth)
+        
+        parsed_json = await request.json
+
+        try:
+            song = parsed_json["song"].split("-")[1].split("(")[0].strip()
+        except IndexError:
+            song = parsed_json["song"]
+
+        response = await self.app.cs.get(f"https://api.spotify.com/v1/search/?q={song}&type=track", headers={"Authorization": f"Bearer {self.app.sp.token}"})
+        track_data = await response.json()
+
+        try:
+            if not track_data["tracks"]["items"]:
+                raise KeyError()
+        
+            audio_features = self.app.sp.audio_features([track_data["tracks"]["items"][0]["uri"]])
+            mood = audio_features[0]["valence"]
+
+            try:
+                selected_tracks_uri = tracks.select_tracks(self.app.sp, mood, int(amount), "mood")
+            except spotipy.SpotifyException:
+                sp = self.app.refresh()
+
+                selected_tracks_uri = tracks.select_tracks(sp, mood, int(amount), "mood")
+            
+            return jsonify({"data": selected_tracks_uri, "mood": mood})
+        except KeyError:
+            return jsonify({"message": "Track not found", "status": 404}), 404
+            
 
 api = Api("api", __name__, url_prefix="/api")

@@ -70,7 +70,7 @@ class Playlists(commands.Cog):
                 return await ctx.send(await r.text())
         
         if len(data["data"]) == 0:
-            new_embed.description = "I couldn't find any songs matching your search! Try using a different mood or bpm."
+            new_embed.description = "I couldn't find any songs matching your search! Try using a different mood."
             return await message.edit(embed=new_embed)
 
         new_embed.description = "Loading songs into the playlist  <a:loading:739877158507380846>"
@@ -80,9 +80,9 @@ class Playlists(commands.Cog):
 
         controller = self.get_controller(ctx)
         for song in data["data"]:
-            query = f'ytsearch:{song[0]} (lyrics video)'
+            query = f'ytsearch:{song[0]} (audio)'
 
-            tracks = await self.bot.wavelink.get_tracks(f'{query}')
+            tracks = await self.bot.wavelink.get_tracks(query)
 
             if tracks:
                 await controller.queue.put(tracks[0])
@@ -105,6 +105,91 @@ class Playlists(commands.Cog):
 
         if ctx.subcommand_passed:
             return
+    
+    @commands.group(name="generate", aliases=["g"])
+    async def generate_(self, ctx):
+        """Playlist generating parent command"""
+        if not self.music:
+            self.music = self.bot.cogs.get("Music")
+        
+        if ctx.subcommand_passed:
+            return
+        
+    @generate_.command(name="mood")
+    async def generate_mood_(self, ctx, mood=None):
+        """Generate a playlist based on your mood. The bot will analyze your messages within the channel to determine this."""
+        try:
+            mood = [float(mood)]
+        except (ValueError, TypeError):
+            mood = await self.bot.analyze_mood(ctx, mood)
+
+        await ctx.send(f"Mood is: {mood[0]}")
+    
+        if not ctx.author.voice:
+            return await ctx.send("Please join a voice channel before running this command.")
+        
+        player = self.bot.wavelink.get_player(ctx.guild.id)
+
+        if not player.is_connected:
+            await ctx.invoke(self.music.connect_)
+        
+        return await self.generate_playlist(ctx, mood[0])
+    
+    @generate_.command(name="nowplaying", aliases=["np"])
+    async def generate_now_playing_(self, ctx):
+        """Generate a playlist based on the playing song"""
+        player = self.bot.wavelink.get_player(ctx.guild.id)
+
+        if not player.is_connected or not player.is_playing:
+            return await ctx.send("I am not currently anything!")
+        
+        now_playing = str(player.current)
+
+        new_embed = discord.Embed(colour=self.bot.colour, description=f"Generating your bespoke playlist based on **{now_playing}** <a:loading:739877158507380846>")
+        message = await ctx.send(embed=new_embed)
+
+        amount = await self.bot.get_custom_length(ctx)
+        highest = await self.bot.get_length(ctx)
+
+        if not amount:
+            amount = highest
+        elif amount > highest:
+            amount = highest
+            await self.bot.delete_limit(ctx)
+        
+        async with self.bot.cs.post(f"{self.bot.WEB_URL}/api/generate/song/{amount}", headers={"x-token": self.bot.http.token}, json={"song": now_playing}) as r:
+            try:
+                data = await r.json()
+            except Exception:
+                return await ctx.send(await r.text())
+        
+        if data.get("status") == 404:
+            new_embed.description = "I couldn't find any spotify song relating to the currently playing track."
+            return await message.edit(embed=new_embed)
+
+        self.playlist_cache[ctx.author.id] = [data["mood"], data["data"]]
+
+        new_embed.description = "Loading songs into the playlist  <a:loading:739877158507380846>"
+        await message.edit(embed=new_embed)
+            
+        controller = self.get_controller(ctx)
+        for song in data["data"]:
+            query = f'ytsearch:{song[0]} (lyrics video)'
+
+            tracks = await self.bot.wavelink.get_tracks(f'{query}')
+
+            if tracks:
+                await controller.queue.put(tracks[0])
+        
+        new_embed.description = f"Successfully generated a playlist of {len(data['data'])} songs based on **{now_playing}**.\n\nWant to generate larger playlists? Consider becoming a patreon [here](https://patreon.com/logan_webb) to increase your playlist sizes, as well as save playlists!\n\nWant to save this playlist? Run `{ctx.prefix}playlist save PLAYLIST NAME`!"
+        await message.edit(embed=new_embed)
+
+        count = await self.bot.db.fetch("SELECT * FROM total")
+
+        if not count:
+            return await self.bot.db.execute("INSERT INTO total (total) VALUES (1)")
+        
+        return await self.bot.db.execute("UPDATE total SET total=$1", count[0]["total"]+1)
         
     @playlist_.command(name="saves", aliases=["list"])
     async def playlist_saves_(self, ctx):
@@ -210,26 +295,6 @@ To edit and configure your playlist, or share this playlist with your friends, l
         embed.description = "Loaded your playlist!"
 
         return await status.edit(embed=embed)
-
-    @playlist_.command(name="mood")
-    async def mood_(self, ctx, mood=None):
-        """Generate a playlist based on your mood. The bot will analyze your messages within the channel to determine this."""
-        try:
-            mood = [float(mood)]
-        except (ValueError, TypeError):
-            mood = await self.bot.analyze_mood(ctx, mood)
-
-        await ctx.send(f"Mood is: {mood[0]}")
-    
-        if not ctx.author.voice:
-            return await ctx.send("Please join a voice channel before running this command.")
-        
-        player = self.bot.wavelink.get_player(ctx.guild.id)
-
-        if not player.is_connected:
-            await ctx.invoke(self.music.connect_)
-        
-        return await self.generate_playlist(ctx, mood[0])
     
     @playlist_.command(name="limit")
     async def limit_(self, ctx, amount: int):

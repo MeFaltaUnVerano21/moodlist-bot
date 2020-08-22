@@ -42,6 +42,7 @@ sp._custom_cache = {
     "sad": [],
     "dark": []
 }
+sp.token = token
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -56,6 +57,7 @@ def refresh():
 
     _sp = spotipy.Spotify(auth=token)
     _sp._custom_cache = sp._custom_cache
+    _sp.token = token
 
     return _sp
 
