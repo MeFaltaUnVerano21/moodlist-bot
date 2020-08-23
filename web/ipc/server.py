@@ -9,6 +9,8 @@ class WsServer:
         self.loop = app.loop
 
         self.endpoints = {}
+
+        self.status = "DORMANT"
     
     def route(self, func):
         self.endpoints[func.__name__] = func
@@ -32,4 +34,5 @@ class WsServer:
             self.loop = asyncio.new_event_loop()
         
         print("Running WS Server")
+        self.status = "RUNNING"
         self.loop.run_until_complete(websockets.serve(self.serve, "localhost", 8765))
