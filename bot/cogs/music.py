@@ -57,7 +57,7 @@ class MusicController:
             self.now_playing = await self.channel.send(embed=embed)
 
             voice_channel = self.bot.get_channel(player.channel_id)
-            await self.bot.ipc("now_playing", {"guild_id": self.guild_id, "song": str(song), "members": voice_channel.voice_states})
+            await self.bot.ipc("now_playing", {"guild_id": self.guild_id, "song": str(song), "members": [m.id for m in voice_channel.members]})
 
             await self.next.wait()
 
