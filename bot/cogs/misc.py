@@ -38,6 +38,27 @@ class Misc(commands.Cog):
         embed.set_thumbnail(url=result[1])
 
         return await ctx.send(embed=embed)
+    
+    @commands.command(name="invite", aliases=["invites", "links"])
+    async def invite_(self, ctx):
+        """Get a list of invites"""
+        embed = discord.Embed(title="Useful links", description=f"""
+[Invite through our website](https://moodlist.xyz/invite)
+[Invite through discord link](https://discord.com/api/oauth2/authorize?client_id=739489265263837194&permissions=37046592&scope=bot)
+[Support server](https://discord.gg/kayUTZm)
+
+Consider supporting Moodlist on [patreon](https://patreon.com/logan_webb) in order to receive benefits and keep the bot up and running.
+        """, colour=self.bot.colour)
+        embed.set_thumbnail(url=self.bot.user.avatar_url_as(format="png"))
+
+        return await ctx.send(embed=embed)
+    
+    @commands.command(name="tutorial")
+    async def tutorial_(self, ctx):
+        """Look at the Moodlist Tutorial"""
+        embed = await self.bot.load_tutorial(ctx, True)
+
+        return await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Misc(bot))

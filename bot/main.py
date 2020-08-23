@@ -9,9 +9,14 @@ import aiohttp
 
 from textblob import TextBlob
 
+from errors import FirstTimeUse
+
+import websockets
+
 class Bot(commands.Bot):
     def __init__(self):
         self.WEB_URL = os.environ.get("MOODLIST_URL")
+        self.WS_URI = "ws://localhost:8765"
 
         super().__init__(command_prefix=self.get_prefix, case_insensitive=True)
 
@@ -33,6 +38,9 @@ class Bot(commands.Bot):
         }
 
         self.prefix_cache = {}
+        self.tutorial_cache = []
+
+        self.FirstTimeUse = FirstTimeUse
     
     # PREFIX
     async def get_prefix(self, message):
@@ -69,6 +77,12 @@ class Bot(commands.Bot):
             for prefix in prefixes:
                 self.prefix_cache[prefix["id"]] = prefix["prefix"]
             
+        if not self.tutorial_cache:
+            people = await self.db.fetch("SELECT * FROM people")
+
+            for person in people:
+                self.tutorial_cache.append(person["id"])
+            
         await self.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name="unique playlists | Moodlist"))
     
     async def on_guild_join(self, guild):
@@ -78,8 +92,31 @@ class Bot(commands.Bot):
     async def on_guild_remove(self, guild):
         await self.cs.post("https://discordapp.com/api/webhooks/746390721061191691/GhpWUcP5qwQyPYMIFZ8OlSLiSVgztorfwEdCPE0zIMoweOSYtHbFRZWSA2yuiRkFoqA_", json={"content": f"Left {guild.name} - {guild.member_count} members. I am now in {len(self.guilds)} guilds"})
         await self.db.execute("DELETE FROM guilds WHERE id=$1", guild.id)
-    
+
     # CUSTOM STUFF
+    async def ipc(self, endpoint, json):
+        async with websockets.connect(self.WS_URI) as websocket:
+            await websocket.send(json.dumps({"endpoint": endpoint, "data": json}))
+            response = await websocket.recv()
+
+            return response
+
+    async def load_tutorial(self, ctx, cmd: bool):
+        embed = discord.Embed(title="Welcome to moodlist!", description=f"""
+Welcome to Moodlist! It looks like you have not used me before, so here is a quick rundown of my basic features.
+
+I am a music bot which analyzes your mood and generates unique spotify playlists based on the results! To get started join a voice call and run **{ctx.prefix}generate mood**, and watch the magic happen.
+You are able to save your generated playlists, and load them later when you need them. After generating a playlist, run **{ctx.prefix}playlist save PLAYLIST NAME HERE**. You are able to manage, and share your playlist with other people through the [Moodlist Website](https://moodlist.xyz).
+
+Moodlist costs money to host and allow you to use the bot for free. If you would like perks including beta featres, larger playlist sizes and more save slots, consider becoming a [Moodlist Patreon](https://patreon.com/logan_webb)
+Enjoy creating some unique playlists! Be sure to run **{ctx.prefix}help** to see my other commands, and join the [support server](https://discord.gg/kayUTZm) if you need support.
+
+{f'You are now able to run **{ctx.prefix}{ctx.command}** without being disturbed.' if not cmd else ''}
+            """, colour=self.colour)
+        embed.set_thumbnail(url=self.user.avatar_url_as(format="png"))
+
+        return embed
+
     async def get_length(self, ctx):
         member = self.get_guild(605754700503187466).get_member(ctx.author.id)
 
@@ -154,5 +191,17 @@ class Bot(commands.Bot):
         for i in range(0, len(data), amount):
             yield data[i:i + amount]
 
+bot = Bot()
+
+@bot.check
+async def global_used_bot(ctx):
+    if ctx.command.name.startswith("jishaku"):
+        return True
+    
+    if ctx.author.id not in ctx.bot.tutorial_cache:
+        raise FirstTimeUse("First time using the bot.")
+    
+    return True
+
 if __name__ == "__main__":
-    Bot().run("NzM5NDg5MjY1MjYzODM3MTk0.XybNCw.MCOjGsQGtu_d--pOQoULiM8no7A")
+    bot.run("NzM5NDg5MjY1MjYzODM3MTk0.XybNCw.MCOjGsQGtu_d--pOQoULiM8no7A")

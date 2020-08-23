@@ -56,6 +56,8 @@ class MusicController:
             embed = discord.Embed(description=f"Now playing: \"{song}\"", colour=self.bot.colour)
             self.now_playing = await self.channel.send(embed=embed)
 
+            print(await self.bot.ipc("now_playing", {"guild_id": self.guild_id, "song": song}))
+
             await self.next.wait()
 
 class Music(commands.Cog):
@@ -93,8 +95,6 @@ class Music(commands.Cog):
     async def start_nodes(self):
         await self.bot.wait_until_ready()
 
-        # Initiate our nodes. For this example we will use one server.
-        # Region should be a discord.py guild.region e.g sydney or us_central (Though this is not technically required)
         us_node = await self.bot.wavelink.initiate_node(**self.get_node_info("us_central"))
         eu_node = await self.bot.wavelink.initiate_node(**self.get_node_info("eu_central"))
 
