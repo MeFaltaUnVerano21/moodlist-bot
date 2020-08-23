@@ -94,9 +94,9 @@ class Bot(commands.Bot):
         await self.db.execute("DELETE FROM guilds WHERE id=$1", guild.id)
 
     # CUSTOM STUFF
-    async def ipc(self, endpoint, json):
+    async def ipc(self, endpoint, data):
         async with websockets.connect(self.WS_URI) as websocket:
-            await websocket.send(json.dumps({"endpoint": endpoint, "data": json}))
+            await websocket.send(json.dumps({"endpoint": endpoint, "data": data}))
             response = await websocket.recv()
 
             return response
