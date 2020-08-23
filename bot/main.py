@@ -12,6 +12,7 @@ from textblob import TextBlob
 from errors import FirstTimeUse
 
 import websockets
+import json
 
 class Bot(commands.Bot):
     def __init__(self):
