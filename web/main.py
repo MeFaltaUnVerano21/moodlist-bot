@@ -11,11 +11,14 @@ import aiohttp
 
 import spotipy
 import asyncpg
+import asyncio
 
 from textblob import TextBlob
 
 import json
 import os
+
+from ipc import server
 
 GA_TRACKING_ID = os.environ.get("GA_TRACKING_ID")
 
@@ -61,7 +64,17 @@ def refresh():
 
     return _sp
 
+loop = asyncio.get_event_loop()
+
 app = Quart(__name__)
+app.loop = loop
+
+ws = server.WsServer(app)
+
+@ws.route
+async def now_playing(json):
+    print(json)
+    return json
 
 app.sp = sp
 sp.app = app
@@ -173,4 +186,5 @@ async def before():
     app.cs = aiohttp.ClientSession()
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    ws.start()
+    app.run(debug=True, use_reloader=False, loop=app.loop)
