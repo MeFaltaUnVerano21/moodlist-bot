@@ -36,3 +36,4 @@ class WsServer:
         print("Running WS Server")
         self.status = "RUNNING"
         self.loop.run_until_complete(websockets.serve(self.serve, "localhost", 8765))
+        self.app.run(loop=self.loop, debug=False, use_reloader=True)

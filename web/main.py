@@ -187,5 +187,3 @@ async def before():
 
 if __name__ == "__main__":
     ws.start()
-    print(ws.status)
-    app.run(debug=True, use_reloader=False, loop=app.loop)
