@@ -56,7 +56,7 @@ class MusicController:
             embed = discord.Embed(description=f"Now playing: \"{song}\"", colour=self.bot.colour)
             self.now_playing = await self.channel.send(embed=embed)
 
-            print(await self.bot.ipc("now_playing", {"guild_id": self.guild_id, "song": str(song)}))
+            await self.bot.ipc("now_playing", {"guild_id": self.guild_id, "song": str(song), "members": [m.id for m in self.channel.members]})
 
             await self.next.wait()
 
