@@ -185,5 +185,7 @@ async def before():
     app.db = await asyncpg.create_pool(database="moodlist", user=os.environ.get("PG_NAME"), password=os.environ.get("PG_PASSWORD"))
     app.cs = aiohttp.ClientSession()
 
+    await ws.start()    
+
 if __name__ == "__main__":
-    ws.start()
+    app.run(loop=self.loop, debug=False, use_reloader=True)

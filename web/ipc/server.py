@@ -29,11 +29,7 @@ class WsServer:
 
             return await ws.send(json.dumps(result))
 
-    def start(self):
-        if not self.loop:
-            self.loop = asyncio.new_event_loop()
-        
-        print("Running WS Server")
+    async def start(self):
         self.status = "RUNNING"
-        self.loop.run_until_complete(websockets.serve(self.serve, "localhost", 8765))
-        self.app.run(loop=self.loop, debug=False, use_reloader=True)
+        print("WS Starting")
+        await websockets.serve(self.serve, "localhost", 8765)
