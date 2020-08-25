@@ -21,3 +21,5 @@ Another unique feature of moodlist is the ability to save your playlists through
 <hr><br>
 
 I look forward to updating this bot in the future, and keeping it running for people to enjoy. If you have any questions, head over to [moodlist.xyz](https://moodlist.xyz) and click the "Support" button in the nav bar!
+
+<strong>Please note that the token in bot/main.py is an OLD TOKEN.
