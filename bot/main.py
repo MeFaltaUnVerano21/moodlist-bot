@@ -205,4 +205,4 @@ async def global_used_bot(ctx):
     return True
 
 if __name__ == "__main__":
-    bot.run("NzM5NDg5MjY1MjYzODM3MTk0.XybNCw.MCOjGsQGtu_d--pOQoULiM8no7A")
+    bot.run(os.environ.get("API_TOKEN"))

@@ -20,10 +20,8 @@ import os
 
 from ipc import server
 
-GA_TRACKING_ID = os.environ.get("GA_TRACKING_ID")
-
-client_id = "00070e6d6685407ea4a370c43fc3d1d8"
-client_secret = "766692a177f541bb8291e9316ae7542d"
+client_id = os.environ.get("SP_CLIENT_ID")
+client_secret = os.environ.get("SP_CLIENT_SECRET")
 redirect_uri = "http://localhost:8888/callback"
 scope = "user-library-read user-top-read playlist-modify-public user-follow-read user-follow-modify"
 
@@ -48,7 +46,6 @@ sp._custom_cache = {
 sp.token = token
 
 def chunks(lst, n):
-    """Yield successive n-sized chunks from lst."""
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
@@ -73,7 +70,6 @@ ws = server.WsServer(app)
 
 @ws.route
 async def now_playing(json):
-    print(json)
     return json
 
 app.sp = sp
@@ -83,9 +79,9 @@ app.secret_key = b"flask_key"
 app.refresh = refresh
 
 app.config["guilds"] = 0
-app.config["SECRET_KEY"] = b"jklskfjnakdj"
+app.config["SECRET_KEY"] = os.environ.get("SEC_KEY")
 app.config["DISCORD_CLIENT_ID"] = "739489265263837194"
-app.config["DISCORD_CLIENT_SECRET"] = "lL6oIxaMyg4M7ws6nicodQkAb1R-hxHr"
+app.config["DISCORD_CLIENT_SECRET"] = os.environ.get("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = os.environ.get("MOODLIST_REDIRECT")
 app.config["URL"] = os.environ.get("MOODLIST_URL")
 
@@ -102,11 +98,6 @@ class DiscordSubclass(DiscordOAuth2Session):
         return session.pop("DISCORD_OAUTH2_STATE", str())
 
     async def callback(self):
-        """A method which should be always called after completing authorization code grant process
-        usually in callback view.
-        It fetches the authorization token and saves it flask
-        `session <http://flask.pocoo.org/docs/1.0/api/#flask.session>`_ object.
-        """
         values = await request.values
         error = values.get("error")
         if error:
@@ -128,25 +119,6 @@ MOOD_VALUES =  {
     "dark": 0,
     "meh": 0.5
 }
-
-@app.route("/lol", methods=["POST"])
-def get_pl():
-    data = request.json
-    count = 0
-
-    for uri in data["data"]:
-        pl = sp.playlist(uri)
-        ids = []
-
-        for track in pl["tracks"]["items"]:
-            for artist in track["track"]["artists"]:
-                ids.append(artist["id"])
-
-        for data in chunks(ids, 10):
-            sp.user_follow_artists(ids=data)
-            count += 1
-    
-    return jsonify({"followed": count})
 
 def analyze_mood(content):
     text = TextBlob(content.lower())
@@ -188,4 +160,4 @@ async def before():
     await ws.start()    
 
 if __name__ == "__main__":
-    app.run(loop=self.loop, debug=False, use_reloader=True)
+    app.run(loop=loop, debug=False, use_reloader=True)

@@ -80,7 +80,7 @@ class Music(commands.Cog):
     def get_node_info(self, region):
         config = {
             "host": "167.172.50.54",
-            "password": "lavalink@root@logan",
+            "password": os.environ.get("LAVALINK_PSWD"),
             "identifier": region.upper(),
             "region": region
         }
