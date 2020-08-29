@@ -79,7 +79,7 @@ app.secret_key = b"flask_key"
 app.refresh = refresh
 
 app.config["guilds"] = 0
-app.config["SECRET_KEY"] = os.environ.get("SEC_KEY")
+app.config["SECRET_KEY"] = app.secret_key
 app.config["DISCORD_CLIENT_ID"] = "739489265263837194"
 app.config["DISCORD_CLIENT_SECRET"] = os.environ.get("DISCORD_CLIENT_SECRET")
 app.config["DISCORD_REDIRECT_URI"] = os.environ.get("MOODLIST_REDIRECT")
