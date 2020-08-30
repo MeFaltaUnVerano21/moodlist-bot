@@ -80,16 +80,12 @@ class Music(commands.Cog):
 
     def get_node_info(self, region):
         config = {
-            "host": "167.172.50.54",
+            "host": os.environ.get("LAVALINK_HOST"),
             "password": os.environ.get("LAVALINK_PSWD"),
             "identifier": region.upper(),
-            "region": region
+            "region": region,
+            "port": 20000
         }
-
-        if region == "us_central":
-            config["port"] = 20000
-        else:
-            config["port"] = 20001
         config["rest_uri"] = f"http://{config['host']}:{config['port']}"
 
         return config
@@ -98,10 +94,7 @@ class Music(commands.Cog):
         await self.bot.wait_until_ready()
 
         us_node = await self.bot.wavelink.initiate_node(**self.get_node_info("us_central"))
-        eu_node = await self.bot.wavelink.initiate_node(**self.get_node_info("eu_central"))
-
         us_node.set_hook(self.on_event_hook)
-        eu_node.set_hook(self.on_event_hook)
     
     async def on_event_hook(self, event):
         """Node hook callback."""
@@ -341,6 +334,10 @@ class Music(commands.Cog):
     async def info_(self, ctx):
         """Retrieve various Node/Server/Player information."""
         player = self.bot.wavelink.get_player(ctx.guild.id)
+        
+        if not player:
+            return await ctx.send("No player.")
+
         node = player.node
 
         used = humanize.naturalsize(node.stats.memory_used)
