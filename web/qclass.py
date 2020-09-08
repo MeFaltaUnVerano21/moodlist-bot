@@ -34,7 +34,7 @@ class ClassyBlueprint(Blueprint):
             func for func in dir(cls)
             if callable(getattr(cls, func))
             and func not in IGNORED_METHODS
-            and str(func)[0] != "_"
+            and not str(func).startswith("_")
         ]
         return methods
     
@@ -56,10 +56,13 @@ class ClassyBlueprint(Blueprint):
             _obj_method = getattr(self, _method)
 
             kw = inspect.signature(_obj_method)
+
             if kw.parameters.get("route"):
                 route = kw.parameters.get("route")
+                
                 if route.default == "NO_ROUTE":
                     continue
+                
                 _route = self.url_prefix + route.default.replace("'", "")
             else:
                 if _method == "index":
